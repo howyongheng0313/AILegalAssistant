@@ -1,70 +1,177 @@
-# Getting Started with Create React App
+# Legal Assistant
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React-based legal document analysis application that uses AWS services for document processing and AI analysis.
 
-## Available Scripts
+## 🎯 Features
 
-In the project directory, you can run:
+- **Document Upload**: Support for PDF, DOC, DOCX, TXT files
+- **AI Analysis**: Powered by AWS Bedrock for intelligent document review
+- **Risk Assessment**: Automatic categorization of clauses by risk level
+- **Real-time Status**: Live polling for analysis progress
+- **Interactive Chat**: Ask questions about your analyzed documents
+- **Modern UI**: Clean, responsive interface with progress indicators
 
-### `npm start`
+## 🏗️ Architecture
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+Frontend (React) → Backend (Flask) → S3 → Lambda → Bedrock
+     ↑                ↑                        ↓
+     └── Polling ←── Caching ←── HTTP Callback ←┘
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Data Flow
+1. **Upload**: Frontend → Backend → S3 storage
+2. **Trigger**: S3 event → Lambda function
+3. **Analysis**: Lambda → Bedrock AI processing
+4. **Callback**: Lambda → Backend API endpoint
+5. **Polling**: Frontend checks status every 3 seconds
+6. **Display**: Results shown in categorized sections
 
-### `npm test`
+## 📁 Project Structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+legal_assistant/
+├── src/                    # React frontend
+│   ├── App.js             # Main component with polling logic
+│   ├── App.css            # Modern UI styling
+│   └── index.js           # React entry point
+├── backend/               # Flask API server
+│   ├── app.py            # API endpoints + result caching
+│   ├── requirements.txt   # Python dependencies
+│   └── .env.example      # Environment template
+└── lambda/               # AWS Lambda functions (to be created)
+    └── bedrock-analyzer/ # Document analysis function
+```
 
-### `npm run build`
+## 🚀 Quick Start
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
+- Node.js 16+
+- Python 3.8+
+- AWS Account with Bedrock access
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1. Frontend Setup
+```bash
+# Install dependencies
+npm install
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Configure environment
+cp .env.example .env
+# Edit REACT_APP_BACKEND_URL=http://localhost:5000
 
-### `npm run eject`
+# Start development server
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 2. Backend Setup
+```bash
+# Navigate to backend
+cd backend
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Install Python dependencies
+pip install -r requirements.txt
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# Configure AWS credentials
+cp .env.example .env
+# Edit with your AWS credentials and S3 bucket name
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Start Flask server
+python app.py
+```
 
-## Learn More
+### 3. AWS Configuration (Required)
+- Create S3 bucket for document storage
+- Set up Lambda function for Bedrock integration
+- Configure IAM roles and permissions
+- Enable Bedrock models in your region
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🔌 API Endpoints
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `POST` | `/upload` | Upload document, returns `fileId` |
+| `GET` | `/analysis-status/{fileId}` | Check analysis progress |
+| `POST` | `/analysis-result` | Lambda callback endpoint |
+| `POST` | `/chat` | Interactive Q&A about documents |
+| `GET` | `/health` | Service health check |
 
-### Code Splitting
+## 📊 Analysis Categories
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Documents are automatically categorized into:
 
-### Analyzing the Bundle Size
+### 🔴 High Risk Clauses
+- Potentially unfair or problematic terms
+- Requires immediate attention
+- May need legal review
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 🟡 Caution Clauses  
+- Terms requiring careful consideration
+- Standard but worth noting
+- May need clarification
 
-### Making a Progressive Web App
+### 🟢 Normal Clauses
+- Standard acceptable terms
+- No immediate concerns
+- Typical industry language
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## ⚙️ Configuration
 
-### Advanced Configuration
+### Backend Environment (.env)
+```bash
+AWS_ACCESS_KEY_ID=your_access_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_key_here
+AWS_DEFAULT_REGION=us-east-1
+S3_BUCKET_NAME=your-legal-documents-bucket
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Frontend Environment (.env)
+```bash
+REACT_APP_BACKEND_URL=http://localhost:5000
+```
 
-### Deployment
+## 🔧 Development Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- **Real-time Polling**: Automatic status updates every 3 seconds
+- **Progress Indicators**: Visual upload and analysis progress
+- **Error Handling**: Comprehensive error messages and recovery
+- **Responsive Design**: Works on desktop and mobile devices
+- **File Validation**: Type and size checking before upload
 
-### `npm run build` fails to minify
+## 🚦 Status Flow
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. **Idle** → Ready for document upload
+2. **Uploading** → File transfer to backend/S3
+3. **Processing** → Bedrock analysis in progress
+4. **Completed** → Results available for viewing
+5. **Failed** → Error occurred, retry available
+
+## 🛠️ Next Steps
+
+### Phase 1: Core Functionality ✅
+- [x] File upload with validation
+- [x] Backend API with S3 integration
+- [x] Polling mechanism for status updates
+- [x] Modern UI with progress indicators
+
+### Phase 2: AWS Integration (In Progress)
+- [ ] Lambda function for Bedrock analysis
+- [ ] S3 event triggers
+- [ ] IAM roles and permissions
+- [ ] Bedrock model configuration
+
+### Phase 3: Advanced Features
+- [ ] User authentication
+- [ ] Document history
+- [ ] Export functionality
+- [ ] Multi-language support
+
+## 📝 License
+
+MIT License - see LICENSE file for details.
+
+## 🆘 Troubleshooting
+
+**Upload Issues**: Check file type/size limits and backend connectivity
+**Analysis Stuck**: Verify Lambda function and Bedrock permissions
+**Polling Errors**: Ensure backend is running and accessible
+**AWS Errors**: Check credentials and service availability

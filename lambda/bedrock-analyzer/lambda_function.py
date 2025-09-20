@@ -15,7 +15,7 @@ s3 = boto3.client('s3')
 bedrock = boto3.client('bedrock-runtime')
 
 # Environment variables
-BACKEND_CALLBACK_URL = os.environ.get('BACKEND_CALLBACK_URL', 'http://localhost:5000/analysis-result')
+BACKEND_CALLBACK_URL = os.environ.get('BACKEND_CALLBACK_URL', 'http://10.112.80.120:5000/analysis-result')
 
 def lambda_handler(event, context):
     """Simple PDF analysis function"""

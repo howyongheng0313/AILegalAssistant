@@ -132,6 +132,29 @@ def get_analysis_status(file_id):
         print(f"Error getting status: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/chat', methods=['POST'])
+def chat():
+    """Simple chat endpoint for prototype"""
+    try:
+        data = request.get_json()
+        message = data.get('message', '')
+        
+        if not message:
+            return jsonify({'success': False, 'message': 'No message provided'}), 400
+        
+        # Simple response for prototype
+        response_message = f"Thanks for your question: '{message}'. This is a prototype chat response. Full chat functionality will be available after AWS setup is complete."
+        
+        return jsonify({
+            'success': True,
+            'response': response_message,
+            'message': 'Chat response generated'
+        }), 200
+        
+    except Exception as e:
+        print(f"Chat error: {str(e)}")
+        return jsonify({'success': False, 'message': f'Chat failed: {str(e)}'}), 500
+
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'healthy'}), 200

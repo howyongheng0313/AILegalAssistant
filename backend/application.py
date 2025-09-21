@@ -5,23 +5,19 @@ import boto3
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
+import json
 
 # Load environment variables
 load_dotenv()
 
 # AWS configuration
-AWS_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_REGION = os.getenv('AWS_DEFAULT_REGION')
 S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
+LAMBDA_FUNCTION_NAME = os.getenv('LAMBDA_FUNCTION_NAME')
 
-# Create S3 client
-s3 = boto3.client(
-    's3',
-    aws_access_key_id=AWS_ACCESS_KEY,
-    aws_secret_access_key=AWS_SECRET_KEY,
-    region_name=AWS_REGION
-)
+# Create AWS clients
+s3 = boto3.client('s3', region_name=AWS_REGION)
+lambda_client = boto3.client('lambda', region_name=AWS_REGION)
 
 app = Flask(__name__)
 CORS(app)
@@ -60,6 +56,28 @@ def upload_pdf():
         # Upload to S3
         s3.upload_fileobj(file, S3_BUCKET_NAME, s3_key)
         
+        # Trigger Lambda function for analysis
+        try:
+            lambda_payload = {
+                'Records': [{
+                    's3': {
+                        'bucket': {'name': S3_BUCKET_NAME},
+                        'object': {'key': s3_key}
+                    }
+                }]
+            }
+            
+            lambda_client.invoke(
+                FunctionName=LAMBDA_FUNCTION_NAME,
+                InvocationType='Event',  # Asynchronous invocation
+                Payload=json.dumps(lambda_payload)
+            )
+            print(f"Lambda function triggered for file: {s3_key}")
+            
+        except Exception as lambda_error:
+            print(f"Lambda invocation error: {str(lambda_error)}")
+            # Continue anyway - S3 trigger should handle this as backup
+        
         # Initialize analysis status
         analysis_results[file_id] = {
             'status': 'processing',
@@ -87,6 +105,21 @@ def receive_analysis_result():
         data = request.get_json()
         
         file_id = data.get('fileId')
+        
+        # Handle error results
+        if data.get('error') or data.get('status') == 'failed':
+            error_message = data.get('error', 'Analysis failed')
+            if file_id and file_id in analysis_results:
+                analysis_results[file_id] = {
+                    'status': 'failed',
+                    'message': f'Analysis failed: {error_message}',
+                    'timestamp': datetime.now().isoformat(),
+                    'fileName': analysis_results[file_id].get('fileName', 'Unknown'),
+                    's3Key': analysis_results[file_id].get('s3Key', '')
+                }
+            return jsonify({'success': True, 'message': 'Error status updated'}), 200
+        
+        # Handle successful results
         analysis_result = data.get('analysisResult')
         document_text = data.get('documentText')
         clause_positions = data.get('clausePositions', [])

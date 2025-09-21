@@ -296,7 +296,7 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           <FileText className="header-icon" />
-          <h1>Legal Assistant</h1>
+          <h1>Praetor</h1>
         </div>
       </header>
 

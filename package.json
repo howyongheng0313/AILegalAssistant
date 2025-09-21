@@ -1,6 +1,7 @@
 {
-  "name": "legal_assistant",
-  "version": "0.1.0",
+  "name": "praetor",
+  "version": "1.0.0",
+  "description": "AI-powered legal document analysis for university students",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.1",

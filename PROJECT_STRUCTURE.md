@@ -1,62 +1,63 @@
-# Praetor - Project Structure
+# 🏗️ Legal Assistant - API Gateway Architecture
 
-## 📁 **Clean Project Organization**
+## 📁 Project Structure (Cleaned)
 
 ```
-praetor/
-├── 📂 backend/                 # Flask API (Beanstalk)
-│   ├── application.py          # Main Flask application
-│   ├── requirements.txt        # Python dependencies
-│   └── .env                    # Backend environment variables
-│
-├── 📂 lambda/                  # AWS Lambda Functions
-│   └── bedrock-analyzer/       # Document analysis function
-│       ├── lambda_function.py  # Main Lambda handler
-│       ├── requirements.txt    # Lambda dependencies
-│       └── lambda-deployment.zip
-│
-├── 📂 src/                     # React Frontend (Amplify)
-│   ├── App.js                  # Main React component
-│   ├── App.css                 # Praetor styling
-│   ├── index.js                # React entry point
-│   └── index.css               # Global styles
-│
-├── 📂 public/                  # Static Assets
-│   ├── favicon.ico             # Browser icon
-│   ├── index.html              # HTML template
-│   ├── manifest.json           # PWA manifest
-│   └── robots.txt              # SEO configuration
-│
-├── 📄 package.json             # Frontend dependencies
-├── 📄 .env.example             # Environment template
-├── 📄 .gitignore               # Git ignore rules
-├── 📄 amplify.yml              # Amplify build config
-├── 📄 AWS_SETUP_GUIDE.md       # Deployment guide
-└── 📄 README.md                # Project documentation
+legal_assistant/
+├── 📁 src/                          # React Frontend
+│   ├── App.js                       # Main React component
+│   ├── App.css                      # Styling
+│   ├── index.js                     # React entry point
+│   └── index.css                    # Global styles
+├── 📁 public/                       # Static assets
+│   ├── index.html                   # HTML template
+│   ├── favicon.ico                  # App icon
+│   ├── manifest.json                # PWA manifest
+│   └── robots.txt                   # SEO robots file
+├── 📁 lambda/                       # AWS Lambda Functions
+│   └── 📁 api-handler/              # Main API Lambda (replaces Flask backend)
+│       ├── lambda_function.py       # Combined backend + analysis logic
+│       └── requirements.txt         # Python dependencies
+├── 📄 package.json                  # React dependencies
+├── 📄 package-lock.json             # Dependency lock file
+├── 📄 .env.example                  # Environment variables template
+├── 📄 .env                          # Local environment variables
+└── 📄 .gitignore                    # Git ignore rules
 ```
 
-## 🎯 **Key Features**
+## 🗑️ Removed Files (No Longer Needed)
 
-- **Clean Architecture**: Separated frontend, backend, and serverless functions
-- **Modern UI**: Beautiful color scheme with professional design
-- **AWS Integration**: Optimized for Amplify + Beanstalk + Lambda
-- **Production Ready**: Proper environment configuration and security
+- ❌ `backend/` folder - Replaced by Lambda function
+- ❌ `lambda/bedrock-analyzer/` - Merged into api-handler
 
-## 🚀 **Deployment Stack**
+## 🚀 New Architecture Benefits
 
-- **Frontend**: AWS Amplify (React)
-- **Backend**: AWS Elastic Beanstalk (Flask)
-- **Processing**: AWS Lambda + Bedrock Nova Pro
-- **Storage**: AWS S3
+### Before (Complex)
+```
+React → Elastic Beanstalk (Flask) → S3 → Lambda → Bedrock
+```
 
-## 🎨 **Color Scheme**
+### After (Simple)
+```
+React → API Gateway → Lambda → S3/DynamoDB/Bedrock
+```
 
-- **Background**: #fffffe
-- **Headlines**: #272343  
-- **Text**: #2d334a
-- **Buttons**: #ffd803
-- **Accents**: #e3f6f5, #bae8e8
+## 📦 Deployment Package
 
----
+For AWS deployment, you only need to zip:
+- `lambda/api-handler/` folder → Upload to Lambda
+- Frontend code → Deploy to Amplify
 
-*Praetor - Empowering university students with AI-powered legal document analysis*
+## 🔧 Environment Variables Needed
+
+### Lambda Function
+- `S3_BUCKET_NAME`: Your S3 bucket name
+- `DYNAMODB_TABLE_NAME`: `legal-assistant-results`
+- `BEDROCK_MODEL_ID`: `amazon.nova-pro-v1:0`
+
+### React Frontend (Amplify)
+- `REACT_APP_BACKEND_URL`: Your API Gateway URL
+
+## ✅ Ready for Deployment
+
+The project is now cleaned and ready for the simplified API Gateway architecture!
